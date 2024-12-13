@@ -6,7 +6,7 @@ from .config.config import config_dict
 from api.utils import db
 from .orders.orders import Order, User
 from flask_migrate import Migrate
-
+from flask_jwt_extended import JWTManager
 
 
 def create_app(config=config_dict['dev']):
@@ -16,6 +16,8 @@ def create_app(config=config_dict['dev']):
 
     db.init_app(app)
     migrate=Migrate(app,db)
+
+    jwt=JWTManager(app) 
 
     api = Api(app)
 

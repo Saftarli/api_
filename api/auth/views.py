@@ -4,6 +4,7 @@ from  api.orders.orders import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from http import HTTPStatus
 from api.utils import db
+from flask_jwt_extended import create_access_token,create_refresh_token,jwt_required,get_jwt_identity
 
 auth_namespace = Namespace('auth', description="a namspace for authentication")
 
@@ -28,6 +29,18 @@ user_model=auth_namespace.model(
 
     }
 )
+
+login_model = auth_namespace.model(
+    'Login',{
+        'email': fields.String(required=True,description="An email"),
+        'password':fields.String(required=True, description="a Pssword")
+
+    }
+)
+
+
+
+
 
 @auth_namespace.route('/signup')
 class SignUp(Resource):
@@ -55,42 +68,40 @@ class SignUp(Resource):
 @auth_namespace.route('/login')
 class Login(Resource):
 
+    @auth_namespace.expect(login_model)
     def post(self):
         """ 
             Generate a JWT pair 
         """
-        pass
+
+        data= request.get_json()
+
+        email = data.get('email')
+        password=data.get('password')
+
+        user=User.query.filter_by(email=email).first()
+
+        if (user is not None) and check_password_hash(user.password_hash,password):
+            access_token= create_access_token(identity=user.username)
+            refresh_token=create_refresh_token(identity=user.username)
+
+            response={
+                'access_token': access_token,
+                'refresh_token': refresh_token
+            }
+            return response, HTTPStatus.OK
+        
 
 
+@auth_namespace.route('/refresh')
+class Refresh(Resource):
 
-# @auth_namespace.route('/signup')
-# class SignUp(Resource):
+    @jwt_required(refresh=True)
+    def post(self):
+        username=get_jwt_identity()
+            
 
-#     @auth_namespace.expect(signup_model)
-#     @auth_namespace.marshal_with(signup_model)
-#     def post(self):
-#         """
-#             Create a new user account 
-#         """
-#         data = request.get_json()
+        access_token=create_access_token(identity=username)
 
-#         # Dataların yoxlanması
-#         if not data:
-#             return {"error": "Request data is missing"}, HTTPStatus.BAD_REQUEST
+        return {'access_token':access_token},HTTPStatus.OK
 
-#         if not data.get('username') or not data.get('email') or not data.get('password'):
-#             return {"error": "Username, email, and password are required"}, HTTPStatus.BAD_REQUEST
-
-#         # Şifrənin hash-lənməsi
-#         hashed_password = generate_password_hash(data.get('password'))
-
-#         new_user = User(
-#             username=data.get('username'),
-#             email=data.get('email'),
-#             password_hash=hashed_password,
-#         )
-
-#         db.session.add(new_user)
-#         db.session.commit()
-
-#         return new_user, HTTPStatus.CREATED
