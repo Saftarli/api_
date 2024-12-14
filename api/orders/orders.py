@@ -29,9 +29,10 @@ class Order(db.Model):
     flavour: Mapped[str] = mapped_column(String, nullable=False)
     date_created: Mapped[DateTime] = mapped_column(DateTime, default=datetime.utcnow)
 
+
     # Xarici açar
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
-
+    customer: Mapped["User"]= relationship("User", back_populates="orders")
     def __repr__(self):
         return f"<Order {self.id}>"
     
@@ -48,6 +49,7 @@ class User(db.Model):
 
     # Orders münasibəti
     orders: Mapped[list['Order']] = relationship('Order', back_populates='customer', lazy=True)
+
 
 
 

@@ -10,7 +10,7 @@ auth_namespace = Namespace('auth', description="a namspace for authentication")
 
 
 signup_model = auth_namespace.model(
-    'User',{
+    'SignUp',{
         'id': fields.Integer(),
         'username': fields.String(required=True, description="A username "),
         'email': fields.String(required=True, description="An email"),
@@ -58,9 +58,10 @@ class SignUp(Resource):
             username = data.get('username'),
             email = data.get('email'),
             password_hash =generate_password_hash(data.get('password')),
-        )
+            
+                    )
 
-        db.session.add(self)
+        db.session.add(new_user)
         db.session.commit()
 
         return new_user, HTTPStatus.CREATED
