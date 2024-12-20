@@ -21,7 +21,9 @@ class DevConfig(Config):
 
 
 class TestConfig(Config):
-    pass
+    TESTING=True
+    SQLALCHEMY_ECHO=True
+    SQLALCHEMY_DATABASE_URI='sqlite:///pizza.db'
 
 
 class ProdConfig(Config):
